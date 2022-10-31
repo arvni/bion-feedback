@@ -1,0 +1,164 @@
+a {
+    color: #337ab7;
+}
+
+p {
+    margin-top: 1rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+a:hover {
+    color: #23527c;
+}
+
+a:visited {
+    color: #8d75a3;
+}
+
+body {
+    line-height: 1.5;
+    font-family: sans-serif;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    color: black;
+    margin: 2em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: calc(100vh - 4em);
+    background: url(/images/background-min.jpg);
+    background-size: auto 100%;
+}
+
+h1 {
+    text-decoration: underline red;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 6px;
+    font-size: 220%;
+    font-weight: bold;
+}
+
+h2 {
+    font-weight: bold;
+    color: #005A9C;
+    font-size: 140%;
+    text-transform: uppercase;
+}
+
+.red {
+    color: red;
+}
+
+#controls {
+    display: flex;
+    max-width: 28em;
+    justify-content: center;
+}
+
+button {
+    border: none;
+    padding: 21px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 8px 0px 0 1px;
+    background: cyan;
+    z-index: 10;
+    color: #0667ae;
+}
+
+button:hover, button:focus {
+    background: #04006f;
+    color: aliceblue;
+}
+
+
+button:disabled {
+    pointer-events: none;
+    background: lightgray;
+}
+
+button:first-child {
+    margin-left: 0;
+}
+
+button#recordButton, button#stopButton {
+    border-radius: 50%;
+}
+
+audio {
+    display: block;
+    margin-top: 0.2rem;
+}
+
+li {
+    list-style: none;
+    margin-bottom: 1rem;
+}
+
+#formats {
+    margin-top: 0.5rem;
+    font-size: 80%;
+}
+
+#recordingsList {
+    max-width: 28em;
+}
+
+#timer {
+    font-size: 30px;
+    text-align: center;
+    margin: 1em auto;
+    display: none;
+    color: #0667ae
+}
+
+#header-logo {
+    width: 150px;
+}
+
+#container {
+    width: 77px;
+    position: absolute;
+    z-index: 1;
+}
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-content: center;
+    flex-wrap: nowrap;
+}
+.inputs >div{
+    text-align: center;
+}
+
+.inputs > div:first-child {
+    margin: 1em auto 0.25em;
+}
+
+.inputs > div:last-child {
+    margin: 0.25em auto 1em;
+}
+
+label {
+    font-size: 14px;
+    color: grey;
+}
+
+label > span {
+    font-weight: bold;
+    color: #000000;
+    font-size: 16px;
+    margin: 0.5em;
+}
+.inputs input{
+    border-radius: 5px;
+}
+#submit{
+    border-radius: 40px;
+    margin-left: 20px;
+}
