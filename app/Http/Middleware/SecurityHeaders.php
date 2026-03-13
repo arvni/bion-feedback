@@ -25,6 +25,7 @@ class SecurityHeaders
                 "connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com",
                 "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
                 "font-src 'self' https://fonts.bunny.net",
+                "media-src 'self' blob:",
                 "img-src 'self' data:",
                 "object-src 'none'",
                 "base-uri 'self'",
