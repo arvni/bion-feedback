@@ -47,7 +47,11 @@ export default function Welcome() {
         try {
             const fd = new FormData();
             if (state.type === 'soundRecord') {
-                fd.append('audio_data', state.audio.blob, 'recording.ogg');
+                const mime = state.audio.blob.type;
+                const ext  = mime.includes('mp4') ? 'mp4'
+                           : mime.includes('ogg') ? 'ogg'
+                           : 'webm';
+                fd.append('audio_data', state.audio.blob, `recording.${ext}`);
             } else {
                 fd.append('qa', JSON.stringify(state.qa));
             }

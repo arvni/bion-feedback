@@ -50,6 +50,15 @@ class FeedbackStorageService
     private function safeExtension(UploadedFile $file): string
     {
         $ext = strtolower($file->getClientOriginalExtension());
-        return in_array($ext, config('media.allowed_audio_extensions'), true) ? $ext : 'ogg';
+        if (in_array($ext, config('media.allowed_audio_extensions'), true)) {
+            return $ext;
+        }
+
+        // Derive extension from MIME type as fallback
+        return match(true) {
+            str_contains($file->getMimeType(), 'mp4') => 'mp4',
+            str_contains($file->getMimeType(), 'ogg') => 'ogg',
+            default                                   => 'webm',
+        };
     }
 }
