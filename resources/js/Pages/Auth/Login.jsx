@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Alert, Button, Card, Form } from 'react-bootstrap';
+import Turnstile from '@/components/Turnstile';
 
 export default function Login({ status, canResetPassword }) {
     const [form, setForm]       = useState({ email: '', password: '', remember: false });
     const [errors, setErrors]   = useState({});
     const [loading, setLoading] = useState(false);
+
+    const turnstileRef = useRef(null);
+    const pendingRef   = useRef(false);
 
     const handle = (e) => {
         const { name, value, type, checked } = e.target;
@@ -14,11 +18,28 @@ export default function Login({ status, canResetPassword }) {
 
     const submit = (e) => {
         e.preventDefault();
+        if (pendingRef.current) return;
+        pendingRef.current = true;
         setLoading(true);
-        router.post('/login', form, {
-            onError: (e) => { setErrors(e); setLoading(false); },
+        turnstileRef.current?.execute();
+    };
+
+    const onToken = (token) => {
+        pendingRef.current = false;
+        router.post('/login', { ...form, cf_turnstile_response: token }, {
+            onError:  (e) => {
+                setErrors(e);
+                setLoading(false);
+                turnstileRef.current?.reset();
+            },
             onFinish: () => setLoading(false),
         });
+    };
+
+    const onExpire = () => {
+        pendingRef.current = false;
+        setLoading(false);
+        setErrors({ email: 'CAPTCHA expired. Please try again.' });
     };
 
     return (
@@ -81,6 +102,8 @@ export default function Login({ status, canResetPassword }) {
                                     />
                                 </Form.Group>
 
+                                <Turnstile ref={turnstileRef} onToken={onToken} onExpire={onExpire} />
+
                                 <Button
                                     type="submit"
                                     variant="primary"
@@ -88,7 +111,7 @@ export default function Login({ status, canResetPassword }) {
                                     className="w-100 mb-3"
                                     disabled={loading}
                                 >
-                                    {loading ? 'Logging in…' : 'Log in'}
+                                    {loading ? 'Verifying…' : 'Log in'}
                                 </Button>
 
                                 {canResetPassword && (

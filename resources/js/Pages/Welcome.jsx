@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import LanguageStep      from '@/components/LanguageStep';
 import FirstStep         from '@/components/FirstStep';
@@ -6,6 +6,7 @@ import SecondStep        from '@/components/SecondStep';
 import SoundRecordStep   from '@/components/SoundRecordStep';
 import QAStep            from '@/components/QAStep';
 import AppNotification   from '@/components/AppNotification';
+import Turnstile         from '@/components/Turnstile';
 
 const TOTAL_DOTS = 4;
 const dotIndex   = { 1: 0, 2: 1, 3: 2, soundRecord: 3, qa: 3 };
@@ -22,18 +23,27 @@ export default function Welcome() {
     });
     const [notif, setNotif] = useState(null); // { type, message }
 
+    const turnstileRef = useRef(null);
+    const pendingRef   = useRef(false);
+
     const showNotif = (type, message) => setNotif({ type, message });
     const closeNotif = () => {
         setNotif(null);
-        // reset to start after success
         if (notif?.type === 'success') {
             setStep(1);
             setState({ phoneNo: '', language: 'en', type: null, audio: null, qa: [] });
         }
     };
 
-    const submit = async () => {
+    const submit = () => {
+        if (pendingRef.current) return;
+        pendingRef.current = true;
         setLoading(true);
+        turnstileRef.current?.execute();
+    };
+
+    const doSubmit = async (token) => {
+        pendingRef.current = false;
         try {
             const fd = new FormData();
             if (state.type === 'soundRecord') {
@@ -41,9 +51,10 @@ export default function Welcome() {
             } else {
                 fd.append('qa', JSON.stringify(state.qa));
             }
-            fd.append('type',     state.type);
-            fd.append('phoneNo',  state.phoneNo);
-            fd.append('language', state.language);
+            fd.append('type',                  state.type);
+            fd.append('phoneNo',               state.phoneNo);
+            fd.append('language',              state.language);
+            fd.append('cf_turnstile_response', token);
             await axios.post('/api/upload', fd);
             showNotif('success', state.language === 'ar'
                 ? 'شكراً لك على وقتك، تقييمك يهمنا.'
@@ -54,9 +65,15 @@ export default function Welcome() {
                 ? 'حدث خطأ ما، يرجى المحاولة مرة أخرى.'
                 : 'Something went wrong. Please try again.'
             );
+            turnstileRef.current?.reset();
         } finally {
             setLoading(false);
         }
+    };
+
+    const onExpire = () => {
+        pendingRef.current = false;
+        setLoading(false);
     };
 
     const renderStep = () => {
@@ -93,7 +110,8 @@ export default function Welcome() {
                 </div>
             </div>
 
-            {/* Custom notification — replaces browser alert() */}
+            <Turnstile ref={turnstileRef} onToken={doSubmit} onExpire={onExpire} />
+
             {notif && (
                 <AppNotification
                     type={notif.type}

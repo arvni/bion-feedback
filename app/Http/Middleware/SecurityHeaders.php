@@ -17,6 +17,19 @@ class SecurityHeaders
         $response->headers->set('X-XSS-Protection', '1; mode=block');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'microphone=(self), camera=(), geolocation=()');
+        if (app()->isProduction()) {
+            $response->headers->set('Content-Security-Policy', implode('; ', [
+                "default-src 'self'",
+                "script-src 'self' https://challenges.cloudflare.com",
+                "frame-src https://challenges.cloudflare.com",
+                "connect-src 'self' https://challenges.cloudflare.com",
+                "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
+                "font-src 'self' https://fonts.bunny.net",
+                "img-src 'self' data:",
+                "object-src 'none'",
+                "base-uri 'self'",
+            ]));
+        }
 
         if ($request->isSecure()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
