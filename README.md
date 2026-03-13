@@ -200,6 +200,100 @@ Files are **not publicly accessible**. All playback goes through the authenticat
 
 ---
 
+## Docker
+
+### Build
+
+```bash
+docker build -t bion-feedback .
+```
+
+### Run (single container)
+
+```bash
+docker run -d \
+  --name bion-feedback \
+  -p 8000:8000 \
+  -e APP_KEY=base64:... \
+  -e APP_URL=http://localhost:8000 \
+  -e DB_HOST=your-db-host \
+  -e DB_PORT=3306 \
+  -e DB_DATABASE=voice_record \
+  -e DB_USERNAME=root \
+  -e DB_PASSWORD=secret \
+  -e MAIL_MAILER=smtp \
+  -e MAIL_HOST=your-mail-host \
+  -e MAIL_PORT=587 \
+  -e MAIL_USERNAME=... \
+  -e MAIL_PASSWORD=... \
+  -e FEEDBACK_NOTIFY_EMAIL=feedback@example.com \
+  -e TURNSTILE_SITE_KEY=... \
+  -e TURNSTILE_SECRET_KEY=... \
+  bion-feedback
+```
+
+Or use an env file:
+
+```bash
+docker run -d --name bion-feedback -p 8000:8000 --env-file .env bion-feedback
+```
+
+### Container roles
+
+The image supports multiple roles via the `CONTAINER_ROLE` environment variable:
+
+| Role | Command | Description |
+|---|---|---|
+| `app` (default) | `php artisan serve` | HTTP server on port 8000 |
+| `queue` | `php artisan queue:work` | Processes email queue jobs |
+| `scheduler` | `php artisan schedule:run` | Runs scheduled tasks every 60 s |
+
+### Docker Compose example
+
+```yaml
+services:
+  app:
+    image: bion-feedback
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      CONTAINER_ROLE: app
+    depends_on:
+      - db
+
+  queue:
+    image: bion-feedback
+    env_file: .env
+    environment:
+      CONTAINER_ROLE: queue
+    depends_on:
+      - db
+
+  scheduler:
+    image: bion-feedback
+    env_file: .env
+    environment:
+      CONTAINER_ROLE: scheduler
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: voice_record
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+```
+
+> **Note:** Run `php artisan key:generate --show` locally to generate an `APP_KEY` value for the container.
+
+---
+
 ## Admin Access
 
 Navigate to `/login` and sign in with the credentials you created during installation. After login you are redirected to `/admin`.
