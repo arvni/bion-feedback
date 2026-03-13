@@ -46,13 +46,17 @@ export default function RecorderControls({ recorderState, handlers, setShowTimer
         return () => clearInterval(timerRef.current);
     }, [phase]);
 
-    const start = () => {
+    const start = async () => {
         try {
-            startRecording();
+            await startRecording();
             setPhase('recording');
             setShowTimer(true);
         } catch (e) {
-            if (onError) onError(e.message);
+            const msg = e?.message?.toLowerCase() ?? '';
+            const friendly = msg.includes('denied') || msg.includes('not allowed')
+                ? 'Microphone access was denied. Please allow microphone access and try again.'
+                : 'Could not access microphone. Please check your device settings.';
+            if (onError) onError(friendly);
         }
     };
 

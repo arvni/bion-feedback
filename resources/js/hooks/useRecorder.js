@@ -3,6 +3,13 @@ import {startRecording, saveRecording} from "@/handlers/recorder-controls";
 
 const objectURL = window.URL || window.webkitURL;
 
+const MIME_TYPE = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg;codecs=opus',
+].find(t => MediaRecorder.isTypeSupported(t)) ?? '';
+
 const initialState = {
     recordingMinutes: 0,
     recordingSeconds: 0,
@@ -53,12 +60,13 @@ export default function useRecorder() {
 
     useEffect(() => {
         if (recorderState.mediaStream)
-            setRecorderState((prevState) => {
-                return {
-                    ...prevState,
-                    mediaRecorder: new MediaRecorder(prevState.mediaStream),
-                };
-            });
+            setRecorderState((prevState) => ({
+                ...prevState,
+                mediaRecorder: new MediaRecorder(
+                    prevState.mediaStream,
+                    MIME_TYPE ? { mimeType: MIME_TYPE } : {}
+                ),
+            }));
     }, [recorderState.mediaStream]);
 
     useEffect(() => {
@@ -73,7 +81,7 @@ export default function useRecorder() {
             };
 
             recorder.onstop = () => {
-                const blob = new Blob(chunks, {type: "audio/webm;codecs=opus"});
+                const blob = new Blob(chunks, { type: MIME_TYPE || 'audio/webm' });
                 const url = objectURL.createObjectURL(blob);
                 setRecorderState((prevState) => {
                     if (prevState.mediaRecorder)

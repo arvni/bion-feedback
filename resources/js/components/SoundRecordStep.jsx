@@ -5,8 +5,6 @@ import RecorderControls from '@/components/recorder-controls';
 import useRecorder from '@/hooks/useRecorder';
 import { formatMinutes, formatSeconds } from '@/utils/format-time';
 
-URL = window.URL || window.webkitURL;
-
 const T = {
     en: {
         instr:  'Tap the microphone and speak freely.',
@@ -57,9 +55,7 @@ export default function SoundRecordStep({ setState, submit, loading, language = 
             {/* Audio playback */}
             {audio?.url && !showTimer && (
                 <div className="audio-review">
-                    <audio controls src={audio.url}>
-                        <source src={audio.url} type="audio/webm;codecs=opus" />
-                    </audio>
+                    <audio controls src={audio.url} />
                 </div>
             )}
 
