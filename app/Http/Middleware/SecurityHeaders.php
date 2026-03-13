@@ -20,9 +20,9 @@ class SecurityHeaders
         if (app()->isProduction()) {
             $response->headers->set('Content-Security-Policy', implode('; ', [
                 "default-src 'self'",
-                "script-src 'self' https://challenges.cloudflare.com",
+                "script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com",
                 "frame-src https://challenges.cloudflare.com",
-                "connect-src 'self' https://challenges.cloudflare.com",
+                "connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com",
                 "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
                 "font-src 'self' https://fonts.bunny.net",
                 "img-src 'self' data:",
