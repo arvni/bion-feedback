@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +16,17 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return Inertia::render('Welcome');
 });
+
+Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () {
+    Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/questions', [AdminController::class, 'questions'])->name('questions');
+    Route::post('/questions', [AdminController::class, 'storeQuestion'])->name('questions.store');
+    Route::put('/questions/{question}', [AdminController::class, 'updateQuestion'])->name('questions.update');
+    Route::delete('/questions/{question}', [AdminController::class, 'destroyQuestion'])->name('questions.destroy');
+    Route::get('/responses',    [AdminController::class, 'responses'])->name('responses');
+    Route::get('/audio/{file}', [AdminController::class, 'streamAudio'])->name('audio');
+});
+
+require __DIR__ . '/auth.php';

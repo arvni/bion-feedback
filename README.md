@@ -1,66 +1,207 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Voice Record — Bilingual Feedback Collection App
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A mobile-first web application for collecting customer feedback via voice recordings or structured Q&A surveys. Supports English and Arabic (RTL) with a clean multi-step wizard UI.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Bilingual** — English and Arabic with full RTL layout support (Cairo font for Arabic)
+- **Two feedback modes** — Voice recording (up to 60 seconds) or structured Q&A survey
+- **Multi-step wizard** — Language → Phone → Mode → Record/Survey
+- **Admin panel** — Dashboard with stats, question management (EN + AR), paginated responses with audio playback
+- **Authenticated audio streaming** — Voice files served through a protected Laravel route (not publicly exposed)
+- **Custom notifications** — No browser `alert()` — animated overlay with auto-dismiss for success
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Layer | Technology |
+|---|---|
+| Backend | Laravel 12, PHP 8.2+ |
+| Frontend | React 19, Inertia.js v2 |
+| Styling | Bootstrap 5, custom SCSS |
+| Build | Vite 6 |
+| Database | MySQL |
+| Fonts | Nunito (EN), Cairo (AR) via Bunny Fonts |
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Requirements
 
-## Laravel Sponsors
+- PHP 8.2+
+- Composer
+- Node.js 18+
+- MySQL 8+
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+---
 
-### Premium Partners
+## Installation
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+```bash
+# 1. Clone the repository
+git clone <repo-url>
+cd voice-record
 
-## Contributing
+# 2. Install PHP dependencies
+composer install
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 3. Install JS dependencies
+npm install
 
-## Code of Conduct
+# 4. Environment setup
+cp .env.example .env
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Edit `.env` with your database credentials:
 
-## Security Vulnerabilities
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=voice_record
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+# 5. Run migrations
+php artisan migrate
 
-## License
+# 6. Create storage symlink (for file access)
+php artisan storage:link
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# 7. Create the first admin user
+php artisan tinker
+>>> \App\Models\User::create(['name'=>'Admin','email'=>'admin@example.com','password'=>bcrypt('password')]);
+
+# 8. Build assets
+npm run build
+
+# 9. Start the server
+php artisan serve
+```
+
+---
+
+## Development
+
+```bash
+# Run Vite dev server (HMR) alongside Laravel
+npm run dev          # http://localhost:5173
+php artisan serve    # http://localhost:8000
+```
+
+---
+
+## Project Structure
+
+```
+resources/js/
+├── Pages/
+│   ├── Welcome.jsx          # Main wizard shell (step state, submit logic)
+│   ├── Admin/
+│   │   ├── Dashboard.jsx    # Stats + per-question rating breakdown
+│   │   ├── Questions.jsx    # CRUD for survey questions (EN + AR)
+│   │   └── Responses.jsx    # Paginated response list + audio player
+│   └── Auth/                # Login, ForgotPassword, ResetPassword, etc.
+├── Layouts/
+│   └── AdminLayout.jsx      # Navbar + layout wrapper for admin pages
+├── components/
+│   ├── LanguageStep.jsx     # Step 1 — EN / AR language selector
+│   ├── FirstStep.jsx        # Step 2 — Phone number input
+│   ├── SecondStep.jsx       # Step 3 — Voice or Survey choice
+│   ├── SoundRecordStep.jsx  # Final step — mic recording UI
+│   ├── QAStep.jsx           # Final step — emoji rating survey
+│   ├── recorder-controls.jsx# Mic button + progress ring + stop/submit
+│   └── AppNotification.jsx  # Animated success/error overlay
+├── hooks/
+│   └── useRecorder.js       # MediaRecorder state management hook
+├── handlers/
+│   └── recorder-controls.js # startRecording / saveRecording helpers
+└── utils/
+    ├── format-time.js        # MM:SS timer formatter
+    ├── generate-key.js       # UUID key generator
+    └── recorder.js           # Low-level recorder utilities
+```
+
+---
+
+## Routes
+
+### Public
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | Main feedback wizard |
+| `POST` | `/api/upload` | Submit voice recording or Q&A answers |
+| `GET` | `/api/questions` | Fetch active survey questions (ordered) |
+
+### Admin (requires authentication)
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/admin` | Dashboard |
+| `GET` | `/admin/questions` | List questions |
+| `POST` | `/admin/questions` | Create question |
+| `PUT` | `/admin/questions/{id}` | Update question |
+| `DELETE` | `/admin/questions/{id}` | Delete question |
+| `GET` | `/admin/responses` | Paginated responses list |
+| `GET` | `/admin/audio/{id}` | Stream audio file (authenticated only) |
+
+### Auth
+
+| Method | Path | Description |
+|---|---|---|
+| `GET/POST` | `/login` | Admin login |
+| `POST` | `/logout` | Logout |
+| `GET/POST` | `/forgot-password` | Password reset request |
+| `GET/POST` | `/reset-password/{token}` | Set new password |
+
+---
+
+## Database Schema
+
+### `files` — Feedback submissions
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | bigint | Primary key |
+| `phoneNo` | string | Submitter's phone number |
+| `type` | string | `soundRecord` or `qa` |
+| `fileAddress` | string\|null | Storage path to audio file (voice only) |
+| `qa` | json\|null | Array of `{question, value}` objects (survey only) |
+| `hash` | string | UUID, unique per submission |
+| `created_at` | timestamp | Auto-managed by Laravel |
+
+### `questions` — Survey questions
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | bigint | Primary key |
+| `text` | text | English question text |
+| `text_ar` | text\|null | Arabic question text |
+| `order` | integer | Display order (unique) |
+| `status` | boolean | `1` = active, `0` = hidden from survey |
+
+---
+
+## Audio Storage
+
+Voice recordings are stored on the `local` disk under:
+
+```
+storage/app/AudioFiles/YYYY-MMM-DD/<timestamp>.<ext>
+```
+
+Files are **not publicly accessible**. All playback goes through the authenticated `GET /admin/audio/{id}` route, which streams the file via `Storage::response()` with the correct MIME type and `Accept-Ranges` headers for seeking.
+
+---
+
+## Admin Access
+
+Navigate to `/login` and sign in with the credentials you created during installation. After login you are redirected to `/admin`.
+
+The admin panel requires authentication on all routes — attempting to access `/admin/*` without a session redirects to `/login`.

@@ -10,11 +10,14 @@ class File extends Model
     use HasFactory;
 
     protected $fillable = [
-        "name",
         "phoneNo",
+        "hash",
         "fileAddress",
+        "qa",
+        "type",
         "description",
-        "createdAt",
-        "updatedAt",
+    ];
+    protected $casts = [
+        "qa" => "json"
     ];
 }

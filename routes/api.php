@@ -4,7 +4,7 @@ use App\Models\File;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,33 +16,58 @@ use Illuminate\Support\Facades\Response;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::post('/upload', function (Request $request) {
+$allowedAudioMimes = ['audio/webm', 'audio/ogg', 'audio/mpeg', 'audio/mp4', 'audio/x-m4a'];
+$allowedExtensions = ['webm', 'ogg', 'mp3', 'oga', 'm4a'];
+
+Route::post('/upload', function (Request $request) use ($allowedAudioMimes, $allowedExtensions) {
     $request->validate([
-        'audio_data' => 'required'
+        'audio_data' => [
+            'required_if:type,soundRecord',
+            'file',
+            'max:20480',                            // 20 MB
+            'mimetypes:' . implode(',', $allowedAudioMimes),
+        ],
+        'qa'       => 'required_if:type,qa|json',
+        'type'     => 'required|in:soundRecord,qa',
+        'phoneNo'  => ['nullable', 'string', 'max:20', 'regex:/^\+?[\d\s\-\(\)]{7,20}$/'],
+        'language' => 'nullable|in:en,ar',
     ]);
-    $uploadedFile = $request->file('audio_data');
-    $fileName = Carbon::now()->timestamp . "." . "wav";
-    $address = "/AudioFiles/" . Carbon::now("Asia/Muscat")->format("Y-M-d");
+
+    $address = "AudioFiles/" . Carbon::now("Asia/Muscat")->format("Y-M-d");
+
     try {
-        if ($uploadedFile->storeAs($address, $fileName)) {
+        if ($request->type === "soundRecord") {
+            $uploadedFile = $request->file('audio_data');
+
+            $ext = strtolower($uploadedFile->getClientOriginalExtension());
+            $extension = in_array($ext, $allowedExtensions) ? $ext : 'ogg';
+            $fileName = (string) Str::uuid() . '.' . $extension;
+
+            if ($uploadedFile->storeAs($address, $fileName)) {
+                $file = File::create([
+                    "phoneNo"     => $request->input("phoneNo") ?: "unknown",
+                    "fileAddress" => $address . "/" . $fileName,
+                    "type"        => $request->type,
+                    "hash"        => (string) Str::uuid(),
+                ]);
+                return response()->json(["file" => $file]);
+            }
+
+            return response()->json(["message" => "Failed to store file."], 500);
+        } else {
             $file = File::create([
-                "name" => $request["name"] ?? "no name",
-                "phoneNo" => $request["number"] ?? "no phone Number",
-                "fileAddress" => $address . "/" . $fileName
+                "phoneNo" => $request->input("phoneNo") ?: "unknown",
+                "qa"      => json_decode($request->input("qa"), true),
+                "type"    => $request->type,
+                "hash"    => (string) Str::uuid(),
             ]);
             return response()->json(["file" => $file]);
         }
-    } catch (Exception $exception) {
-        return response()->json(["message" => $exception->getMessage()], 500);
+    } catch (\Exception $exception) {
+        $message = config('app.debug') ? $exception->getMessage() : 'An error occurred. Please try again.';
+        return response()->json(["message" => $message], 500);
     }
-})->name('file.upload');
+})->middleware('throttle:15,1')->name('file.upload');
 
-Route::get('/download/{id}', function ($id) {
-    $file = File::find($id);
-    //return $file;
-    return Response::download(storage_path("app".$file->fileAddress), null, [
-        'Cache-Control' => 'no-cache, no-store, must-revalidate',
-        'Pragma' => 'no-cache',
-        'Expires' => '0',
-    ], null);
-});
+Route::get("/questions", [\App\Http\Controllers\QuestionController::class, "index"])
+    ->middleware('throttle:60,1');
