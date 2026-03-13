@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Enums\FeedbackType;
 use App\Models\File;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -17,7 +18,7 @@ class FeedbackReceived extends Mailable
 
     public function envelope(): Envelope
     {
-        $type  = $this->file->type === 'qa' ? 'Q&A Survey' : 'Voice Recording';
+        $type  = FeedbackType::tryFrom($this->file->type)?->label() ?? 'Feedback';
         $phone = $this->file->phoneNo ?? 'Unknown';
 
         return new Envelope(

@@ -1,33 +1,22 @@
 <?php
 
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\QuestionAdminController;
+use App\Http\Controllers\ResponseController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-});
+Route::get('/', fn () => Inertia::render('Welcome'));
 
 Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () {
-    Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
-    Route::get('/questions', [AdminController::class, 'questions'])->name('questions');
-    Route::post('/questions', [AdminController::class, 'storeQuestion'])->name('questions.store');
-    Route::put('/questions/{question}', [AdminController::class, 'updateQuestion'])->name('questions.update');
-    Route::delete('/questions/{question}', [AdminController::class, 'destroyQuestion'])->name('questions.destroy');
-    Route::get('/responses',              [AdminController::class, 'responses'])->name('responses');
-    Route::post('/responses/{file}/resend', [AdminController::class, 'resendEmail'])->name('responses.resend');
-    Route::get('/audio/{file}',           [AdminController::class, 'streamAudio'])->name('audio');
+    Route::get('/',                          [DashboardController::class,      'index'])->name('dashboard');
+    Route::get('/questions',                 [QuestionAdminController::class,  'index'])->name('questions');
+    Route::post('/questions',                [QuestionAdminController::class,  'store'])->name('questions.store');
+    Route::put('/questions/{question}',      [QuestionAdminController::class,  'update'])->name('questions.update');
+    Route::delete('/questions/{question}',   [QuestionAdminController::class,  'destroy'])->name('questions.destroy');
+    Route::get('/responses',                 [ResponseController::class,       'index'])->name('responses');
+    Route::post('/responses/{file}/resend',  [ResponseController::class,       'resendEmail'])->name('responses.resend');
+    Route::get('/audio/{file}',              [ResponseController::class,       'streamAudio'])->name('audio');
 });
 
 require __DIR__ . '/auth.php';

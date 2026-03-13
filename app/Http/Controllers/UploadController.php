@@ -2,63 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FeedbackType;
 use App\Http\Requests\StoreUploadRequest;
 use App\Jobs\SendFeedbackEmail;
-use App\Models\File;
-use Carbon\Carbon;
+use App\Services\FeedbackStorageService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Str;
 
 class UploadController extends Controller
 {
+    public function __construct(private FeedbackStorageService $storage) {}
+
     public function store(StoreUploadRequest $request): JsonResponse
     {
-        $phone   = $request->input('phoneNo') ?: 'unknown';
-        $folder  = 'AudioFiles/' . Carbon::now('Asia/Muscat')->format('Y-M-d');
+        $phone = $request->input('phoneNo') ?: 'unknown';
+        $type  = FeedbackType::from($request->input('type'));
 
-        $file = $request->type === 'soundRecord'
-            ? $this->storeVoice($request, $phone, $folder)
-            : $this->storeQA($request, $phone);
-
-        if (! $file) {
-            return response()->json(['message' => 'Failed to store file.'], 500);
+        try {
+            $file = match ($type) {
+                FeedbackType::SoundRecord => $this->storage->storeVoice(
+                    $request->file('audio_data'),
+                    $phone
+                ),
+                FeedbackType::QA => $this->storage->storeQA(
+                    json_decode($request->input('qa'), true),
+                    $phone
+                ),
+            };
+        } catch (\RuntimeException $e) {
+            $message = config('app.debug') ? $e->getMessage() : 'Failed to store submission.';
+            return response()->json(['message' => $message], 500);
         }
 
         SendFeedbackEmail::dispatch($file);
 
         return response()->json(['file' => $file], 201);
-    }
-
-    private function storeVoice(StoreUploadRequest $request, string $phone, string $folder): ?File
-    {
-        $uploaded  = $request->file('audio_data');
-        $ext       = strtolower($uploaded->getClientOriginalExtension());
-        $extension = in_array($ext, StoreUploadRequest::ALLOWED_EXTENSIONS, true) ? $ext : 'ogg';
-        $fileName  = Str::uuid() . '.' . $extension;
-
-        if (! $uploaded->storeAs($folder, $fileName)) {
-            return null;
-        }
-
-        return File::create([
-            'phoneNo'         => $phone,
-            'fileAddress'     => $folder . '/' . $fileName,
-            'type'            => 'soundRecord',
-            'hash'            => (string) Str::uuid(),
-            'email_status'    => 'pending',
-            'email_queued_at' => now(),
-        ]);
-    }
-
-    private function storeQA(StoreUploadRequest $request, string $phone): File
-    {
-        return File::create([
-            'phoneNo'         => $phone,
-            'qa'              => json_decode($request->input('qa'), true),
-            'type'            => 'qa',
-            'hash'            => (string) Str::uuid(),
-            'email_status'    => 'pending',
-            'email_queued_at' => now(),
-        ]);
     }
 }

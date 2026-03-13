@@ -2,34 +2,22 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\FeedbackType;
+use Illuminate\Validation\Rules\Enum;
 
-class StoreUploadRequest extends FormRequest
+class StoreUploadRequest extends BaseFormRequest
 {
-    public const ALLOWED_MIMES = [
-        'audio/webm', 'audio/ogg', 'audio/mpeg', 'audio/mp4', 'audio/x-m4a',
-    ];
-
-    public const ALLOWED_EXTENSIONS = [
-        'webm', 'ogg', 'mp3', 'oga', 'm4a',
-    ];
-
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [
             'audio_data' => [
-                'required_if:type,soundRecord',
+                'required_if:type,' . FeedbackType::SoundRecord->value,
                 'file',
                 'max:20480',
-                'mimetypes:' . implode(',', self::ALLOWED_MIMES),
+                'mimetypes:' . implode(',', config('media.allowed_audio_mimes')),
             ],
-            'qa'       => 'required_if:type,qa|json',
-            'type'     => 'required|in:soundRecord,qa',
+            'qa'       => 'required_if:type,' . FeedbackType::QA->value . '|json',
+            'type'     => ['required', new Enum(FeedbackType::class)],
             'phoneNo'  => ['nullable', 'string', 'max:20', 'regex:/^\+?[\d\s\-\(\)]{7,20}$/'],
             'language' => 'nullable|in:en,ar',
         ];
