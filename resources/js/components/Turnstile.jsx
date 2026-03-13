@@ -6,13 +6,19 @@ const SCRIPT_ID = 'cf-turnstile-script';
 const Turnstile = forwardRef(function Turnstile({ onToken, onExpire }, ref) {
     const containerRef = useRef(null);
     const widgetIdRef  = useRef(null);
+    const onTokenRef   = useRef(onToken);
+    const onExpireRef  = useRef(onExpire);
     const siteKey      = usePage().props.turnstileSiteKey;
 
     const isDev = import.meta.env.DEV;
 
+    // Keep refs up-to-date so the widget always calls the latest callbacks
+    useEffect(() => { onTokenRef.current  = onToken;  }, [onToken]);
+    useEffect(() => { onExpireRef.current = onExpire; }, [onExpire]);
+
     useImperativeHandle(ref, () => ({
         execute: () => {
-            if (isDev) { onToken('dev-bypass'); return; }
+            if (isDev) { onTokenRef.current('dev-bypass'); return; }
             window.turnstile?.execute(widgetIdRef.current);
         },
         reset: () => {
@@ -34,9 +40,9 @@ const Turnstile = forwardRef(function Turnstile({ onToken, onExpire }, ref) {
                 sitekey:            siteKey,
                 appearance:         'interaction-only',
                 execution:          'execute',
-                callback:           onToken,
-                'expired-callback': onExpire,
-                'error-callback':   onExpire,
+                callback:           (token) => onTokenRef.current(token),
+                'expired-callback': ()      => onExpireRef.current(),
+                'error-callback':   ()      => onExpireRef.current(),
             });
         };
 
