@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && rm -rf node_modules package-lock.json && echo \"Cleaned\")",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && npm install 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && npm install @fortawesome/react-fontawesome@latest 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && npm run build 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && node -e \"const p=require\\('./package.json'\\); console.log\\('bootstrap:', p.dependencies?.bootstrap || p.devDependencies?.bootstrap\\); console.log\\('sass:', p.dependencies?.sass || p.devDependencies?.sass\\)\")",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && php artisan make:migration add_text_ar_to_questions_table --table=questions 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && php artisan migrate 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && echo \"yes\" | php artisan migrate 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && php artisan route:list --path=admin 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && php artisan route:list --path=login,register,password,verify,confirm 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && php artisan route:list 2>&1 | grep -E \"login|register|password|verify|confirm\")",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && php artisan make:migration make_file_address_nullable_in_files_table --table=files 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && php artisan make:migration add_hash_and_type_to_files_table --table=files 2>&1)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && npx vite build --mode development 2>&1 | tail -30)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && npx vite build --mode development 2>&1 | grep -E \"\\(error|warning|✓|built in\\)\" | head -20)",
+      "Bash(grep -r \"voicerecord.zip\\\\|index.zip\\\\|public/js/old\\\\|public/style.css\" /d/Projects/mmc/voice-record --include=\"*.php\" --include=\"*.jsx\" --include=\"*.js\" --include=\"*.blade.php\" 2>/dev/null | head -20)",
+      "Bash(grep -l \"import.*Checkbox\\\\|from.*Checkbox\" /d/Projects/mmc/voice-record/resources/js/Pages/Auth/*.jsx 2>/dev/null)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && rm \\\\\n  resources/js/components/Example.jsx \\\\\n  resources/js/components/ApplicationLogo.jsx \\\\\n  resources/js/components/Checkbox.jsx \\\\\n  resources/js/components/Dropdown.jsx \\\\\n  resources/js/components/InputError.jsx \\\\\n  resources/js/components/InputLabel.jsx \\\\\n  resources/js/components/NavLink.jsx \\\\\n  resources/js/components/PrimaryButton.jsx \\\\\n  resources/js/components/ResponsiveNavLink.jsx \\\\\n  resources/js/components/TextInput.jsx \\\\\n  resources/js/handlers/recording-list.js \\\\\n  resources/js/handlers/recordings-list.js \\\\\n  app/Http/Resources/FileResource.php \\\\\n  resources/views/welcome.old.blade.php \\\\\n  resources/css/app.css \\\\\n  && rm -rf public/js/old \\\\\n  && echo \"Done\")",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && npx vite build --mode development 2>&1 | grep -E \"\\(error|Error|✓|built in\\)\" | head -10)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && cat package.json | python -c \"import sys,json; p=json.load\\(sys.stdin\\); [print\\(k,':',v\\) for k,v in {**p.get\\('dependencies',{}\\), **p.get\\('devDependencies',{}\\)}.items\\(\\)]\")",
+      "Bash(find /d/Projects/mmc/voice-record -name \".env*\" -type f 2>/dev/null | head -5)",
+      "Bash(find /d/Projects/mmc/voice-record/config -name \"*.php\" -type f 2>/dev/null | head -15)",
+      "Bash(grep -rn \"axios\\\\|fetch\\\\|method\\\\|post\\\\|put\\\\|delete\" /d/Projects/mmc/voice-record/resources/js/Pages/Admin/*.jsx 2>/dev/null | head -30)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && php artisan make:migration add_email_fields_to_files_table --table=files 2>&1 | tail -2)",
+      "Bash(cd \"D:\\\\Projects\\\\mmc\\\\voice-record\" && npx vite build --mode development 2>&1 | grep -E \"\\(error|Error|✓|built in\\)\" | head -5 && php artisan route:list --path=api 2>&1 | grep -v \"^$\")",
+      "Bash(cd \"D:/Projects/mmc/voice-record\" && php artisan tinker --execute=\"echo App\\\\Enums\\\\FeedbackType::QA->value;\")",
+      "Bash(cd \"D:/Projects/mmc/voice-record\" && php artisan route:list --path=login --columns=method,uri,middleware 2>&1 | head -20 && echo \"---\" && php artisan route:list --path=api/upload --columns=method,uri,middleware 2>&1)",
+      "Bash(cd \"D:/Projects/mmc/voice-record\" && php artisan route:list 2>&1 | grep -E \"login|upload\")",
+      "Bash(cd \"D:/Projects/mmc/voice-record\" && php artisan config:clear && php artisan route:clear && php -r \"require 'vendor/autoload.php'; echo 'OK';\")",
+      "Bash(ls -la \"/d/Projects/mmc/voice-record/routes/\" | grep -E \"\\\\.php$\")",
+      "Bash(find \"/d/Projects/mmc/voice-record/resources/js/Pages\" -type f \\\\\\( -name \"*.jsx\" -o -name \"*.js\" \\\\\\) 2>/dev/null | sort)",
+      "Bash(grep -r \"Http\\\\\\\\\\\\\\\\Kernel\\\\|Http/Kernel\" \"/d/Projects/mmc/voice-record\" --include=\"*.php\" 2>/dev/null | grep -v \".phpstorm\" | head -20)",
+      "Bash(find \"/d/Projects/mmc/voice-record\" -name \"*.php\" -type f -exec grep -l \"Kernel\" {} \\\\; 2>/dev/null | head -20)",
+      "Bash(cd \"D:/Projects/mmc/voice-record\" && rm app/Http/Controllers/FileController.php app/Providers/BroadcastServiceProvider.php routes/channels.php app/Http/Kernel.php resources/views/welcome.blade.php && echo \"Deleted 5 files\")",
+      "Bash(cd \"D:/Projects/mmc/voice-record\" && php artisan route:list 2>&1 | tail -5)"
+    ]
+  }
+}
