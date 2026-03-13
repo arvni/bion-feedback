@@ -38,9 +38,10 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                 ] : null,
             ],
-            'ziggy' => fn () => array_merge((new Ziggy)->toArray(), [
+            'ziggy'             => fn () => array_merge((new Ziggy)->toArray(), [
                 'location' => $request->url(),
             ]),
+            'turnstileSiteKey'  => config('services.turnstile.site_key'),
         ]);
     }
 }

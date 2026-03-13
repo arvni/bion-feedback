@@ -1,13 +1,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { usePage } from '@inertiajs/react';
 
 const SCRIPT_ID = 'cf-turnstile-script';
-const SITE_KEY  = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 const Turnstile = forwardRef(function Turnstile({ onToken, onExpire }, ref) {
     const containerRef = useRef(null);
     const widgetIdRef  = useRef(null);
+    const siteKey      = usePage().props.turnstileSiteKey;
 
-    const isDev = import.meta.env.DEV || !SITE_KEY;
+    const isDev = import.meta.env.DEV;
 
     useImperativeHandle(ref, () => ({
         execute: () => {
@@ -22,10 +23,15 @@ const Turnstile = forwardRef(function Turnstile({ onToken, onExpire }, ref) {
     useEffect(() => {
         if (isDev) return;
 
+        if (!siteKey) {
+            console.error('[Turnstile] turnstileSiteKey is not set. Add TURNSTILE_SITE_KEY to .env.');
+            return;
+        }
+
         const render = () => {
             if (!containerRef.current || !window.turnstile) return;
             widgetIdRef.current = window.turnstile.render(containerRef.current, {
-                sitekey:            SITE_KEY,
+                sitekey:            siteKey,
                 appearance:         'interaction-only',
                 execution:          'execute',
                 callback:           onToken,
