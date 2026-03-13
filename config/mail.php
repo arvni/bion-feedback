@@ -115,4 +115,13 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Feedback Notification Recipient
+    |--------------------------------------------------------------------------
+    | The email address that receives a notification for every new feedback
+    | submission. Set FEEDBACK_NOTIFY_EMAIL in your .env file.
+    */
+    'feedback_notify_email' => env('FEEDBACK_NOTIFY_EMAIL'),
+
 ];

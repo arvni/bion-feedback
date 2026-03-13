@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendFeedbackEmail;
 use App\Models\File;
 use App\Models\Question;
 use Illuminate\Http\Request;
@@ -45,7 +46,14 @@ class AdminController extends Controller
             ];
         });
 
-        return Inertia::render('Admin/Dashboard', compact('totalResponses', 'qaCount', 'soundCount', 'questionStats'));
+        $emailSent    = File::where('email_status', 'sent')->count();
+        $emailPending = File::whereIn('email_status', ['pending'])->count();
+        $emailFailed  = File::where('email_status', 'failed')->count();
+
+        return Inertia::render('Admin/Dashboard', compact(
+            'totalResponses', 'qaCount', 'soundCount', 'questionStats',
+            'emailSent', 'emailPending', 'emailFailed'
+        ));
     }
 
     public function questions()
@@ -87,10 +95,28 @@ class AdminController extends Controller
         return back();
     }
 
-    public function responses()
+    public function responses(Request $request)
     {
-        $files = File::latest()->paginate(20);
+        $query = File::latest();
+
+        if ($request->filled('email_status')) {
+            $query->where('email_status', $request->input('email_status'));
+        }
+
+        $files = $query->paginate(20)->withQueryString();
         return Inertia::render('Admin/Responses', compact('files'));
+    }
+
+    public function resendEmail(File $file)
+    {
+        $file->update([
+            'email_status'    => 'pending',
+            'email_queued_at' => now(),
+        ]);
+
+        SendFeedbackEmail::dispatch($file);
+
+        return back();
     }
 
     public function streamAudio(File $file)

@@ -38,12 +38,12 @@ function avgBadge(avg) {
     return <Badge bg={variant}>{avg} / 4 &nbsp;{EMOJI[Math.round(avg)]}</Badge>;
 }
 
-export default function Dashboard({ totalResponses, qaCount, soundCount, questionStats }) {
+export default function Dashboard({ totalResponses, qaCount, soundCount, questionStats, emailSent, emailPending, emailFailed }) {
     return (
         <AdminLayout title="Dashboard">
             <Head title="Admin – Dashboard" />
 
-            {/* Stat cards */}
+            {/* Response stat cards */}
             <Row className="g-3 mb-4">
                 <Col xs={12} sm={4}>
                     <Card className="border-0 shadow-sm h-100 text-center">
@@ -57,7 +57,7 @@ export default function Dashboard({ totalResponses, qaCount, soundCount, questio
                 <Col xs={12} sm={4}>
                     <Card className="border-0 shadow-sm h-100 text-center">
                         <Card.Body className="py-4">
-                            <div style={{ fontSize: 36 }}>📝</div>
+                            <div style={{ fontSize: 36 }}>📋</div>
                             <div className="display-6 fw-bold mt-1">{qaCount}</div>
                             <div className="text-muted">Q&amp;A Responses</div>
                         </Card.Body>
@@ -69,6 +69,37 @@ export default function Dashboard({ totalResponses, qaCount, soundCount, questio
                             <div style={{ fontSize: 36 }}>🎙</div>
                             <div className="display-6 fw-bold mt-1">{soundCount}</div>
                             <div className="text-muted">Voice Recordings</div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+
+            {/* Email notification stats */}
+            <Row className="g-3 mb-4">
+                <Col xs={12} sm={4}>
+                    <Card className="border-0 shadow-sm h-100 text-center" style={{ borderTop: '3px solid #198754' }}>
+                        <Card.Body className="py-3">
+                            <div style={{ fontSize: 28 }}>✉️</div>
+                            <div className="fs-4 fw-bold text-success mt-1">{emailSent}</div>
+                            <div className="text-muted small">Emails Sent</div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col xs={12} sm={4}>
+                    <Card className="border-0 shadow-sm h-100 text-center" style={{ borderTop: '3px solid #ffc107' }}>
+                        <Card.Body className="py-3">
+                            <div style={{ fontSize: 28 }}>⏳</div>
+                            <div className="fs-4 fw-bold text-warning mt-1">{emailPending}</div>
+                            <div className="text-muted small">Emails Pending</div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col xs={12} sm={4}>
+                    <Card className="border-0 shadow-sm h-100 text-center" style={{ borderTop: '3px solid #dc3545' }}>
+                        <Card.Body className="py-3">
+                            <div style={{ fontSize: 28 }}>⚠️</div>
+                            <div className="fs-4 fw-bold text-danger mt-1">{emailFailed}</div>
+                            <div className="text-muted small">Emails Failed</div>
                         </Card.Body>
                     </Card>
                 </Col>

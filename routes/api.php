@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\SendFeedbackEmail;
 use App\Models\File;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -45,22 +46,28 @@ Route::post('/upload', function (Request $request) use ($allowedAudioMimes, $all
 
             if ($uploadedFile->storeAs($address, $fileName)) {
                 $file = File::create([
-                    "phoneNo"     => $request->input("phoneNo") ?: "unknown",
-                    "fileAddress" => $address . "/" . $fileName,
-                    "type"        => $request->type,
-                    "hash"        => (string) Str::uuid(),
+                    "phoneNo"          => $request->input("phoneNo") ?: "unknown",
+                    "fileAddress"      => $address . "/" . $fileName,
+                    "type"             => $request->type,
+                    "hash"             => (string) Str::uuid(),
+                    "email_status"     => "pending",
+                    "email_queued_at"  => now(),
                 ]);
+                SendFeedbackEmail::dispatch($file);
                 return response()->json(["file" => $file]);
             }
 
             return response()->json(["message" => "Failed to store file."], 500);
         } else {
             $file = File::create([
-                "phoneNo" => $request->input("phoneNo") ?: "unknown",
-                "qa"      => json_decode($request->input("qa"), true),
-                "type"    => $request->type,
-                "hash"    => (string) Str::uuid(),
+                "phoneNo"         => $request->input("phoneNo") ?: "unknown",
+                "qa"              => json_decode($request->input("qa"), true),
+                "type"            => $request->type,
+                "hash"            => (string) Str::uuid(),
+                "email_status"    => "pending",
+                "email_queued_at" => now(),
             ]);
+            SendFeedbackEmail::dispatch($file);
             return response()->json(["file" => $file]);
         }
     } catch (\Exception $exception) {

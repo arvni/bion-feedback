@@ -25,8 +25,9 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::post('/questions', [AdminController::class, 'storeQuestion'])->name('questions.store');
     Route::put('/questions/{question}', [AdminController::class, 'updateQuestion'])->name('questions.update');
     Route::delete('/questions/{question}', [AdminController::class, 'destroyQuestion'])->name('questions.destroy');
-    Route::get('/responses',    [AdminController::class, 'responses'])->name('responses');
-    Route::get('/audio/{file}', [AdminController::class, 'streamAudio'])->name('audio');
+    Route::get('/responses',              [AdminController::class, 'responses'])->name('responses');
+    Route::post('/responses/{file}/resend', [AdminController::class, 'resendEmail'])->name('responses.resend');
+    Route::get('/audio/{file}',           [AdminController::class, 'streamAudio'])->name('audio');
 });
 
 require __DIR__ . '/auth.php';

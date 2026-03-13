@@ -1,11 +1,50 @@
 import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Badge, Button, Card, Modal, Table } from 'react-bootstrap';
 import AdminLayout from '@/Layouts/AdminLayout';
 
 const EMOJI  = { 4: '😄', 3: '🙂', 2: '😐', 1: '🙁', 0: '😠' };
 const LABELS = { 4: 'Excellent', 3: 'Good', 2: 'Neutral', 1: 'Poor', 0: 'Angry' };
 const COLORS = { 4: 'success',  3: 'info',  2: 'warning', 1: 'warning', 0: 'danger' };
+
+const EMAIL_STATUS = {
+    sent:    { label: 'Sent',    bg: 'success', icon: '✓' },
+    pending: { label: 'Pending', bg: 'warning', icon: '⏳' },
+    failed:  { label: 'Failed',  bg: 'danger',  icon: '✗' },
+};
+
+function EmailBadge({ status }) {
+    if (!status) return <span className="text-muted small">—</span>;
+    const s = EMAIL_STATUS[status];
+    if (!s) return <span className="text-muted small">—</span>;
+    return <Badge bg={s.bg}>{s.icon} {s.label}</Badge>;
+}
+
+function ResendButton({ file }) {
+    const [loading, setLoading] = useState(false);
+
+    const canResend = !file.email_status || file.email_status === 'failed';
+
+    if (!canResend && file.email_status !== 'sent') return null;
+
+    return (
+        <Button
+            size="sm"
+            variant={file.email_status === 'sent' ? 'outline-secondary' : 'outline-warning'}
+            disabled={loading || file.email_status === 'pending'}
+            onClick={() => {
+                setLoading(true);
+                router.post(`/admin/responses/${file.id}/resend`, {}, {
+                    preserveScroll: true,
+                    onFinish: () => setLoading(false),
+                });
+            }}
+            title={file.email_status === 'sent' ? 'Re-send email' : 'Send email'}
+        >
+            {loading ? '…' : (file.email_status === 'sent' ? '↺ Resend' : '✉ Send')}
+        </Button>
+    );
+}
 
 function QADetail({ qa }) {
     if (!Array.isArray(qa) || qa.length === 0)
@@ -53,21 +92,14 @@ function AudioPlayer({ fileId, filename }) {
                 controls
                 preload="none"
                 onError={() => setError(true)}
-                style={{
-                    width: '100%',
-                    height: 36,
-                    borderRadius: 20,
-                    outline: 'none',
-                }}
+                style={{ width: '100%', height: 36, borderRadius: 20, outline: 'none' }}
             >
                 <source src={src} type="audio/ogg" />
                 <source src={src} type="audio/webm" />
                 <source src={src} type="audio/mpeg" />
                 Your browser does not support audio.
             </audio>
-            <div className="text-muted mt-1" style={{ fontSize: '0.7rem' }}>
-                {filename}
-            </div>
+            <div className="text-muted mt-1" style={{ fontSize: '0.7rem' }}>{filename}</div>
         </div>
     );
 }
@@ -85,11 +117,7 @@ function Pagination({ links }) {
             <ul className="pagination mb-0">
                 {links.map((link, i) => (
                     <li key={i} className={`page-item ${link.active ? 'active' : ''} ${!link.url ? 'disabled' : ''}`}>
-                        <Link
-                            href={link.url ?? '#'}
-                            className="page-link"
-                            preserveScroll
-                        >
+                        <Link href={link.url ?? '#'} className="page-link" preserveScroll>
                             {decodePaginationLabel(link.label)}
                         </Link>
                     </li>
@@ -99,12 +127,41 @@ function Pagination({ links }) {
     );
 }
 
+const STATUS_FILTERS = [
+    { value: '',        label: 'All' },
+    { value: 'sent',    label: '✓ Sent' },
+    { value: 'pending', label: '⏳ Pending' },
+    { value: 'failed',  label: '✗ Failed' },
+];
+
 export default function Responses({ files }) {
-    const [selected, setSelected] = useState(null); // for QA detail modal
+    const { url } = usePage();
+    const params  = new URLSearchParams(url.split('?')[1] ?? '');
+    const current = params.get('email_status') ?? '';
+
+    const [selected, setSelected] = useState(null);
+
+    const applyFilter = (val) => {
+        router.get('/admin/responses', val ? { email_status: val } : {}, { preserveScroll: true });
+    };
 
     return (
         <AdminLayout title="Responses">
             <Head title="Admin – Responses" />
+
+            {/* Email status filter */}
+            <div className="d-flex gap-2 mb-3 flex-wrap">
+                {STATUS_FILTERS.map(f => (
+                    <Button
+                        key={f.value}
+                        size="sm"
+                        variant={current === f.value ? 'primary' : 'outline-secondary'}
+                        onClick={() => applyFilter(f.value)}
+                    >
+                        {f.label}
+                    </Button>
+                ))}
+            </div>
 
             <Card className="border-0 shadow-sm">
                 <Card.Body className="p-0">
@@ -115,14 +172,15 @@ export default function Responses({ files }) {
                                 <th>Phone</th>
                                 <th style={{ width: 110 }}>Type</th>
                                 <th style={{ width: 170 }}>Date</th>
+                                <th style={{ width: 130 }}>Email</th>
                                 <th>Details / Recording</th>
                             </tr>
                         </thead>
                         <tbody>
                             {files.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="text-center text-muted py-4">
-                                        No responses yet.
+                                    <td colSpan={6} className="text-center text-muted py-4">
+                                        No responses found.
                                     </td>
                                 </tr>
                             )}
@@ -132,12 +190,28 @@ export default function Responses({ files }) {
                                     <td>{file.phoneNo || <span className="text-muted">—</span>}</td>
                                     <td>
                                         {file.type === 'qa'
-                                            ? <Badge bg="info">📝 Q&amp;A</Badge>
+                                            ? <Badge bg="info">📋 Q&amp;A</Badge>
                                             : <Badge bg="secondary">🎙 Voice</Badge>
                                         }
                                     </td>
                                     <td className="text-muted small">
                                         {new Date(file.created_at).toLocaleString()}
+                                    </td>
+                                    <td>
+                                        <div className="d-flex flex-column gap-1 align-items-start">
+                                            <EmailBadge status={file.email_status} />
+                                            {file.email_sent_at && (
+                                                <span className="text-muted" style={{ fontSize: '0.68rem' }}>
+                                                    {new Date(file.email_sent_at).toLocaleString()}
+                                                </span>
+                                            )}
+                                            {file.email_attempts > 0 && file.email_status !== 'sent' && (
+                                                <span className="text-muted" style={{ fontSize: '0.68rem' }}>
+                                                    {file.email_attempts} attempt{file.email_attempts !== 1 ? 's' : ''}
+                                                </span>
+                                            )}
+                                            <ResendButton file={file} />
+                                        </div>
                                     </td>
                                     <td style={{ minWidth: 240 }}>
                                         {file.type === 'qa' ? (

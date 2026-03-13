@@ -16,8 +16,15 @@ class File extends Model
         "qa",
         "type",
         "description",
+        "email_status",
+        "email_queued_at",
+        "email_sent_at",
+        "email_attempts",
     ];
     protected $casts = [
-        "qa" => "json"
+        "qa"               => "json",
+        "email_queued_at"  => "datetime",
+        "email_sent_at"    => "datetime",
+        "email_attempts"   => "integer",
     ];
 }
